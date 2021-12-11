@@ -282,7 +282,8 @@ i_ttest = function(x, y, sd_x, sd_y, n_x, n_y, sigma_equal = TRUE, alternative =
   mean = 0
   
   if(sigma_equal){
-    sp2 = (sd_x^2 + sd_y^2)/2
+    df = (n_x + n_y) - 2
+    sp2 = ( (n_x - 1) * sd_x^2 + (n_y - 1) *sd_y^2  ) /df
     m = sqrt((sp2/n_x) +(sp2/n_y))
     t = (x - mean)/m
     df = (n_x + n_y) - 2
