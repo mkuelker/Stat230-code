@@ -330,13 +330,18 @@ t_shell = function(x, mean, m, t, df, alternative = "two.sided", alpha = 0.05){
     print("error, check test value string")
   }
   
-  print(sprintf("t = %.4f, df = %.4f, critical = %.4f", t, df, crit) )
+  print(sprintf("t = %.4f, df = %.4f, critical = %.4f and %.4f", t, df, crit, -1 * crit) )
   print(h1)
   print(paste("sample mean of x:", x ))
   print(sprintf("pval: %.4f, alpha = %.4f", pval, alpha ))
   if(alternative == "two.sided"){
     conf = c(x - crit * m, x + crit * m)
     print(sprintf("%.3f percent confidence interval: %.4f, %.4f", 1 - alpha, conf[1], conf[2]))
+  }
+  if(pval > alpha){
+    print("fail to reject Ho")
+  }else{
+    print("reject Ho")
   }
 }
 
