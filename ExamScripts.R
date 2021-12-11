@@ -185,8 +185,8 @@ zrev_range = function(n, mean, var, vals){
 }
 
 #cacluate probability from X, mu, sdev directly
-#pnorm(N, mean, sd) calculate Lower tail of distribution
-#pnorm(N, mean, sd, lower.tail = FALSE) calculate upper tail of distribution 
+#pnorm(x, mean, sd) calculate Lower tail of distribution
+#pnorm(x, mean, sd, lower.tail = FALSE) calculate upper tail of distribution 
 
 #Turn probability from normal distribution back into zscore
 #qnorm(probability) where 0 <= probability <= 1
@@ -201,7 +201,7 @@ conf.interval = function(p, x, sd){
 t.interval = function(p, x, sd, n){
   p = (1 - p)/2 #compute alpha  
   arr = c(-1*qt(p,n-1 ), qt(p,n-1)) * sd/sqrt(n)
-  return(round(x - arr, 4))
+  return(x - arr)
 }
 
 interval_range = function(interval){
@@ -220,5 +220,80 @@ n_find = function(p,sd, m){
 }
 
 
+#ttest = function(x, mean, sd, n, alternative = "two.sided", alpha = 0.05){
+
+
+
+ttest = function(x, mean, sd, n, alternative = "two.sided", alpha = 0.05){
+  m = sd/sqrt(n)
+  t = (x - mean)/m
+  df = n - 1
+  t_shell(x, mean, m, t, df, alternative, alpha)
+}
+
+i_ttest = function(x, y, sd_x, sd_y, n_x, n_y, sigma_equal = TRUE, alternative = "two.sided", alpha = 0.05){
+  x = x - y
+  mean = 0
+  
+  if(sigma_equal){
+    sp2 = (sd_x^2 + sd_y^2)/2
+    m = sqrt((sp2/n_x) +(sp2/n_y))
+    t = (x - mean)/m
+    df = (n_x + n_y) - 2
+    t_shell(x, mean, m, t, df, alternative, alpha)
+  }else{
+    m = sqrt( (sd_x^2/n_x) + (sd_y^2/n_y) )
+    t = (x - mean)/m
+    df = welch(sd_x, sd_y, n_x, n_y)
+    t_shell(x, mean, m, t, df, alternative, alpha)
+  }
+}
+
+#this is pulled from the announcment. Hopefully this code works
+welch = function(sa, sb, na, nb){
+  numerator = (sa^2/na + sb^2/nb)^2
+  denom = (sa^2/na)^2/(na-1) + (sb^2/nb)^2/(nb-1)
+  return(numerator/denom)
+}
+
+t_shell = function(x, mean, m, t, df, alternative = "two.sided", alpha = 0.05){
+  print("T-Test")
+
+  crit = 0
+  h1 = "";
+  pval = 0
+  
+  
+  if(alternative == "two.sided"){
+    pval = 2 * pt(t, df, lower.tail=FALSE)
+    crit = qt(1 - alpha/2, df)
+    h1 = paste("alternative hypothesis: true mean is not equal to", mean)
+  }else if(alternative == "less"){
+    pval = pt(t, df, lower.tail=TRUE)
+    crit = qt(alpha, df)
+    h1 = paste("alternative hypothesis: true mean is less than", mean)
+  }else if(alternative == "greater") {
+    crit = qt(1 - alpha, df)
+    pval = pt(t, df, lower.tail=FALSE)
+    h1 = paste("alternative hypothesis: true mean is greater than", mean)
+  }else{
+    print("error, check test value string")
+  }
+  
+  print(sprintf("t = %.4f, df = %.4f, critical = %.4f", t, df, crit) )
+  print(h1)
+  print(paste("sample mean of x:", x ))
+  print(sprintf("pval: %.4f, alpha = %.4f", pval, alpha ))
+  if(alternative == "two.sided"){
+    conf = c(x - crit * m, x + crit * m)
+    print(sprintf("%.3f percent confidence interval: %.4f, %.4f", 1 - alpha, conf[1], conf[2]))
+  }
+}
+
+v1 = c(39,32,41,46,27,33,31,32)
+
+v2 = c(46,41,39,47,35,29,35,39)
+
+ttest(mean(v2) - mean(v1), 0, 4.89 , length(v1), alternative = "two.sided")
 
 
