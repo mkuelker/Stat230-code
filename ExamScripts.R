@@ -61,16 +61,15 @@ words = function(str, n, repeats = FALSE){
     if(repeats){
       return(ucount^n)
     }else{
+      
       return(perm(len, n))
     }
   }else{
     if(repeats){
+      
       return(ucount^n)
     }else{
-      sum = perm(ucount,n)
-      ##magic formula goes here. 
-      print("output generated for no repetitions, compute repeat letter instances by hand")
-      return(sum)
+      return(factorial(len)/prod(factorial(count)))
     }
   }
 }
@@ -231,6 +230,53 @@ ttest = function(x, mean, sd, n, alternative = "two.sided", alpha = 0.05){
   t_shell(x, mean, m, t, df, alternative, alpha)
 }
 
+ztest = function(x, mean, sd, n, alternative = "two.sided", alpha = 0.05){
+  m = sd/sqrt(n)
+  t = (x - mean)/m
+  df = n 
+ 
+  
+  print("Z-Test")
+  crit = 0
+  h1 = "";
+  pval = 0
+  
+  if(alternative == "two.sided"){
+    if(t >= 0){
+      pval = 2 * pnorm(t, lower.tail=FALSE)
+    
+    }else{
+      pval = 2 * pnorm(t, lower.tail=TRUE)
+    }
+    crit = qnorm(1 - alpha/2)
+    h1 = paste("alternative hypothesis: true mean is not equal to", mean)
+  }else if(alternative == "less"){
+    pval = pnorm(t, lower.tail=TRUE)
+    crit = qnorm(alpha)
+    h1 = paste("alternative hypothesis: true mean is less than", mean)
+  }else if(alternative == "greater") {
+    crit = qnorm(1 - alpha)
+    pval = pnorm(t, lower.tail=FALSE)
+    h1 = paste("alternative hypothesis: true mean is greater than", mean)
+  }else{
+    print("error, check test value string")
+  }
+  
+  print(sprintf("Z = %.4f, df = %.4f, critical = %.4f and %.4f", t, df, -1 * crit,  crit) )
+  print(h1)
+  print(paste("sample mean of x:", x ))
+  print(sprintf("pval: %.6f, alpha = %.4f", pval, alpha ))
+  if(alternative == "two.sided"){
+    conf = c(x - crit * m, x + crit * m)
+    print(sprintf("%.3f percent confidence interval: %.4f, %.4f", 1 - alpha, conf[1], conf[2]))
+  }
+  if(pval > alpha){
+    print("fail to reject Ho")
+  }else{
+    print("reject Ho")
+  }
+}
+
 i_ttest = function(x, y, sd_x, sd_y, n_x, n_y, sigma_equal = TRUE, alternative = "two.sided", alpha = 0.05){
   x = x - y
   mean = 0
@@ -265,7 +311,11 @@ t_shell = function(x, mean, m, t, df, alternative = "two.sided", alpha = 0.05){
   
   
   if(alternative == "two.sided"){
-    pval = 2 * pt(t, df, lower.tail=FALSE)
+    if(t >= 0){
+      pval = 2 * pt(t, df, lower.tail=FALSE)
+    }else{
+      pval = 2 * pt(t, df, lower.tail=TRUE)
+    }
     crit = qt(1 - alpha/2, df)
     h1 = paste("alternative hypothesis: true mean is not equal to", mean)
   }else if(alternative == "less"){
@@ -296,4 +346,9 @@ v2 = c(46,41,39,47,35,29,35,39)
 
 ttest(mean(v2) - mean(v1), 0, 4.89 , length(v1), alternative = "two.sided")
 
+df.calc <- function(sa, sb, na, nb){
+  numerator <- (sa^2/na + sb^2/nb)^2
+  denom <- (sa^2/na)^2/(na-1) + (sb^2/nb)^2/(nb-1)
+  numerator/denom
+}
 
